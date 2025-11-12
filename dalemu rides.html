@@ -1,0 +1,457 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RideWith - Driver Profile</title>
+<style>
+  /* Mobile-first styles */
+  :root{
+    --accent:#00c2a8;
+    --muted:#94a3b8;
+    --bg1: linear-gradient(180deg, #061826 0%, #092a3a 50%, #06313a 100%);
+    --glass: rgba(255,255,255,0.06);
+    --card: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;}
+
+  body{
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: var(--bg1);
+    color: #e6eef1;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.35;
+    padding:16px;
+  }
+
+  /* animated floating blobs background */
+  .blobs{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    overflow:hidden;
+
+  }
+  .blob{
+    position:absolute;
+    width:300px;height:300px;
+    background: radial-gradient(circle at 30% 30%, rgba(11, 32, 219, 0.18), transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(61, 228, 10, 0.12), transparent 40%);
+    filter: blur(34px);
+    transform: translate3d(0,0,0);
+    animation: float 12s ease-in-out infinite;
+    opacity:0.9;
+  }
+  .blob.b1{left:-10%; top:-5%; animation-duration:14s}
+  .blob.b2{right:-12%; bottom:-8%; animation-duration:18s; transform:scale(.9)}
+
+  .blob.b3{left:20%; bottom:50%; animation-duration:22s; transform:scale(.7); opacity:.7}
+  @keyframes float{
+    0%{transform:translateY(0) translateX(0) scale(1)}
+    50%{transform:translateY(-30px) translateX(20px) scale(1.05)}
+    100%{transform:translateY(0) translateX(0) scale(1)}
+  }
+
+  /* container & header */
+  .wrap{position:relative; z-index:1; max-width:900px; margin:0 auto;}
+  header{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), 
+
+rgba(38, 27, 129, 0.842));
+    border-radius:16px;
+    padding:12px;
+    box-shadow: 0 6px 18px rgba(14, 198, 223, 0.5);
+    margin-bottom:12px;
+    backdrop-filter: blur(6px);
+  }
+  .logo{
+    width:64px;height:64px;border-radius:14px;
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:20px;color:var(--accent);
+    overflow:hidden;
+  }
+  .logo img{width:100%;height:100%;object-fit:cover}
+
+  .driver-info{flex:1}
+  .driver-name{font-size:18px;font-weight:700; margin:0}
+  .driver-sub{font-size:13px;color:var(--muted); margin-top:4px}
+
+  /* action row */
+  .actions{display:flex;gap:8px;margin-top:10px}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;
+    background:linear-gradient(90deg, rgba(197, 20, 20, 0.02), rgba(255,255,255,0.01));
+    cursor:pointer;border:1px solid rgba(255,255,255,0.03);
+    color:inherit;text-decoration:none;font-weight:600;font-size:14px;
+
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:translateY(2px)}
+  .btn.call{border-left:4px solid var(--accent)}
+  .btn.share{border-left:4px solid #5b9efc}
+  .btn.copy{border-left:4px solid #ffb86b}
+
+  /* gallery */
+  .gallery{
+    margin-top:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    max-height:56vh;
+    overflow:auto;
+    padding-right:6px;
+  }
+  .gallery img{
+
+    width:100%;
+    border-radius:12px;
+    object-fit:cover;
+    display:block;
+    min-height:160px;
+    aspect-ratio:16/9;
+    box-shadow: 0 8px 26px rgba(2,6,23,0.6);
+    transition: transform .25s cubic-bezier(.2,.9,.2,1), filter .25s;
+    cursor:pointer;
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .gallery img:hover{transform:scale(1.02); filter:brightness(1.03) saturate(1.03)}
+
+  /* driver list (other drivers) */
+  .drivers{
+    margin-top:14px;
+
+    display:grid;gap:10px;
+  }
+  .driver-card{
+    display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .small-avatar{
+    width:48px;height:48px;border-radius:10px;background:var(--card);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
+    overflow:hidden;
+  }
+  .driver-meta{flex:1}
+  .driver-meta .dname{font-weight:700;font-size:15px}
+
+  .driver-meta .drole{font-size:12px;color:var(--muted)}
+  .driver-actions{display:flex;gap:8px}
+
+  /* socials */
+  .socials{
+    display:flex;gap:10px;margin-top:14px;
+  }
+  .socials a{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;text-decoration:none;color:inherit;background:var(--glass);border:1px solid rgba(255,255,255,0.03);font-weight:600;font-size:13px}
+
+  /* logo upload hint */
+  .logo-hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+  /* modal (image viewer) */
+
+  .modal{
+    position:fixed;inset:0;display:none;place-items:center;background:rgba(2,6,23,0.6);z-index:40;
+  }
+  .modal.open{display:grid}
+  .modal img{max-width:95%;max-height:90%;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .modal .close{
+    position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);
+    font-weight:700;color:#fff;cursor:pointer
+  }
+
+  /* footer */
+
+  footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px;padding-bottom:60px}
+
+  /* bigger screens */
+  @media(min-width:700px){
+    body{padding:28px}
+    .wrap{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+    .main-col{grid-column:1}
+    .side-col{grid-column:2}
+    .gallery{max-height:70vh}
+  }
+</style>
+</head>
+<body>
+
+<div class="blobs" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+
+  <div class="blob b3"></div>
+</div>
+
+<div class="wrap">
+  <!-- LEFT / MAIN -->
+  <div class="main-col">
+    <header>
+      <div class="logo" id="logoPlace">
+        <!-- Replace the <img> src with your logo file or keep initials -->
+        <!--<img src="logo.png" alt="logo">-->
+        DR
+      </div>
+      <div class="driver-info">
+        <p class="driver-name" id="driverName">DALEMU RIDES</p>
+        <p class="driver-sub" id="driverTag">AIRPORT TRANSFERS,TOWN RUN,SAFARIS AND TOURS • 10.0 ★ • 5 YERAS EXPERIENCE</p>
+
+        <div class="actions">
+          <a class="btn call" id="mainCall" href="tel:+256700301716">
+            📞 Call
+          </a>
+          <button class="btn copy" id="copyMain">📋 Copy Number</button>
+          <button class="btn share" id="shareBtn">🔗 Share</button>
+        </div>
+
+        <p class="logo-hint">Logo area — click to replace or update the <code>#logoPlace</code> element</p>
+      </div>
+    </header>
+
+    <!-- Gallery: vertical list of >5 images -->
+    <section aria-label="driver gallery" class="gallery" id="gallery">
+
+      <!-- Example images — replace src with your images -->
+      <img src="33.png">
+      <img src="33.png">
+      <img src="33.png">
+      <img src="33.png">     
+      <img src="33.png">
+      <img src="33.png">    
+    </section>
+
+    <!-- image modal -->
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+      <button class="close" id="closeModal">✕</button>
+      <img src="33.png" alt="expanded" id="modalImg">
+    </div>
+  </div>
+
+  <!-- RIGHT / SIDEBAR (contacts + socials) -->
+  <aside class="side-col">
+    <section class="drivers" aria-label="other drivers">
+      <!-- Driver cards: replace numbers / names / images -->
+      <div class="driver-card">
+        <div class="small-avatar"><img src="Snapchat-1578064353.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="driver-meta">
+          <div class="dname">DRIVER 1 • 4.8★</div>
+          <div class="drole">Always Available • Toyota Premio</div>
+        </div>
+
+        <div class="driver-actions">
+          <a class="btn" href="tel:+256705107207">Call</a>
+          <button class="btn copyBtn" data-number="+256705107207">Copy</button>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="small-avatar"><img src="Snapchat-1578064353.jpg" alt=""  style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="driver-meta">
+          <div class="dname">B. Mutesasira • 4.7★</div>
+          <div class="drole">Night shifts • Suzuki Alto</div>
+        </div>
+        <div class="driver-actions">
+          <a class="btn" href="tel:+256705107207">Call</a>
+          <button class="btn copyBtn" data-number="+256705107207">Copy</button>
+
+        </div>
+      </div>
+       <div class="driver-card">
+        <div class="small-avatar"><img src="Snapchat-1578064353.jpg" alt=""  style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="driver-meta">
+          <div class="dname">B. Mutesasira • 4.7★</div>
+          <div class="drole">Night shifts • Suzuki Alto</div>
+        </div>
+        <div class="driver-actions">
+          <a class="btn" href="tel:+256705107207">Call</a>
+          <button class="btn copyBtn" data-number="+256705107207">Copy</button>
+
+        </div>
+      </div>
+       <div class="driver-card">
+        <div class="small-avatar"><img src="Snapchat-1578064353.jpg" alt=""  style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="driver-meta">
+          <div class="dname">B. Mutesasira • 4.7★</div>
+          <div class="drole">Night shifts • Suzuki Alto</div>
+        </div>
+        <div class="driver-actions">
+          <a class="btn" href="tel:+256705107207">Call</a>
+          <button class="btn copyBtn" data-number="+256705107207">Copy</button>
+
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="small-avatar">AJ</div>
+        <div class="driver-meta">
+          <div class="dname">Akello J • 4.9★</div>
+          <div class="drole">8 seater • Noah</div>
+        </div>
+        <div class="driver-actions">
+          <a class="btn" href="tel:+256705107207">Call</a>
+          <button class="btn copyBtn" data-number="+256705107207">Copy</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- socials -->
+    <div style="margin-top:14px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">Socials</div>
+      <div class="socials">
+        <a href="https://facebook.com" target="_blank" rel="noopener">📘 Facebook</a>
+        <a href="https://instagram.com" target="_blank" rel="noopener">📸 Instagram</a>
+        <a href="https://wa.me/256700000000" target="_blank" rel="noopener">💬 WhatsApp</a>
+        <a href="https://www.tiktok.com/@dalemurides?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener">📘 tiktok</a>
+      </div>
+    </div>
+
+    <!-- quick booking CTA -->
+    <div style="margin-top:14px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)">
+      <div style="font-weight:800;font-size:15px">Book Flash Now</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:6px">Tap call or share this profile with your friend.</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <a class="btn" href="sms:+256700301716">SMS</a>
+        <a class="btn call" href="tel:+256700301716">Call</a>
+      </div>
+    </div>
+
+    <footer>© Ride With dalemu rides • Built for mobile • Replace placeholders</footer>
+
+  </aside>
+</div>
+
+<script>
+/* Mobile-first interactivity */
+
+// Modal image viewer
+const gallery = document.getElementById('gallery');
+const modal = document.getElementById('modal');
+const modalImg = document.getElementById('modalImg');
+const closeModal = document.getElementById('closeModal');
+
+gallery.addEventListener('click', e => {
+  const img = e.target.closest('img');
+  if(!img) return;
+  const full = img.getAttribute('data-full') || img.src;
+
+  modalImg.src = full;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+});
+
+closeModal.addEventListener('click', ()=> {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  modalImg.src = '';
+});
+modal.addEventListener('click', (e) => {
+  if(e.target === modal) {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    modalImg.src = '';
+  }
+});
+
+
+// Copy number buttons
+function copyText(text){
+  if(!navigator.clipboard) {
+    // fallback
+    const t = document.createElement('textarea');
+    t.value = text; document.body.appendChild(t);
+    t.select();
+    try { document.execCommand('copy'); alert('Copied: ' + text); } catch(e){ alert('Copy failed, number: ' + text); }
+    t.remove();
+    return;
+  }
+  navigator.clipboard.writeText(text).then(()=> {
+    showToast('Copied: ' + text);
+  }).catch(()=> {
+
+    showToast('Could not copy — please long-press the number.');
+  });
+}
+
+// small toast
+function showToast(msg){
+  const el = document.createElement('div');
+  el.textContent = msg;
+  Object.assign(el.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'18px',padding:'10px 14px',background:'rgba(0,0,0,0.6)',color:'#fff',borderRadius:'10px',zIndex:100, fontSize:'14px'});
+  document.body.appendChild(el);
+  setTimeout(()=> el.style.opacity = '0', 2200);
+  setTimeout(()=> el.remove(), 2600);
+
+}
+
+document.querySelectorAll('.copyBtn').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    const num = btn.dataset.number || btn.getAttribute('data-number');
+    copyText(num);
+  });
+});
+document.getElementById('copyMain').addEventListener('click', ()=> {
+  copyText('+256700301716');
+});
+
+// Share button: use Web Share API if available
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const shareData = {
+    title: 
+
+document.getElementById('driverName').textContent,
+    text: 'Book a ride with ' + document.getElementById('driverName').textContent,
+    url: location.href
+  };
+  if(navigator.share){
+    try { await navigator.share(shareData); } catch(e) { showToast('Share cancelled');}
+  } else {
+    // fallback: copy url
+    copyText(location.href);
+  }
+});
+
+// simple progressive enhancement: let user tap logo to replace with file (demo)
+const logoPlace = document.getElementById('logoPlace');
+logoPlace.addEventListener('click', ()=>{
+
+  // create file input
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange = (ev)=> {
+    const f = ev.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      logoPlace.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.alt = 'logo';
+      logoPlace.appendChild(img);
+    };
+    reader.readAsDataURL(f);
+  };
+  inp.click();
+});
+
+// small accessibility: Esc closes modal
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape') {
+    if(modal.classList.contains('open')) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+      modalImg.src = '';
+    }
+  }
+});
+</script>
+</body>
+</html>
